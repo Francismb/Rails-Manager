@@ -35,4 +35,17 @@ if File.exists?('app-root')
 end
 
 # Execute a git clone statement
-exec("git clone https://#{config.repository['username']}@github.com/#{config.repository['url']} app-root")
+system("git clone https://#{config.repository['username']}@github.com/#{config.repository['url']} app-root")
+
+# Update the app-root/config/database.yml file
+File.truncate('app-root/config/database.yml', 0)
+File.open('app-root/config/database.yml', 'w') do |file|
+	file.write("production:\n")
+	file.write("	adapter: postgresql\n")
+	file.write("	encoding: unicode\n")
+	file.write("	pool: 5\n")
+	file.write("	host: #{config.database.address}\n")
+	file.write("	username: #{config.database.username}\n")
+	file.write("	password: #{config.database.password}\n")
+	file.write("	database: #{config.database.name}")
+end
