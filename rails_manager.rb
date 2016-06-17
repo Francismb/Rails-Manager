@@ -80,6 +80,7 @@ File.open('app-root/Passengerfile.json', 'w+') do |file|
 	file.write("	\"environment\": \"production\",\n")
 	file.write("	\"port\": 80,\n")
 	file.write("	\"daemonize\": false\n")
+	file.write("	\"user\": \"webapp\"")
 	file.write("}")
 end
 
