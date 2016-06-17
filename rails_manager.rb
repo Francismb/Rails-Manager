@@ -42,13 +42,13 @@ system("git clone https://#{config.repository['username']}@github.com/#{config.r
 # Update the app-root/config/database.yml file
 File.open('app-root/config/database.yml', 'w+') do |file|
 	file.write("production:\n")
-	file.write("	adapter: postgresql\n")
-	file.write("	encoding: unicode\n")
-	file.write("	pool: 5\n")
-	file.write("	host: #{config.database.address}\n")
-	file.write("	username: #{config.database.username}\n")
-	file.write("	password: #{config.database.password}\n")
-	file.write("	database: #{config.database.name}")
+	file.write("    adapter: postgresql\n")
+	file.write("    encoding: unicode\n")
+	file.write("    pool: 5\n")
+	file.write("    host: #{config.database.address}\n")
+	file.write("    username: #{config.database.username}\n")
+	file.write("    password: #{config.database.password}\n")
+	file.write("    database: #{config.database.name}")
 end
 
 # Update the app-root/Gemfile file
@@ -61,9 +61,10 @@ end
 
 # Install the gems from the Gemfile
 Dir.chdir('app-root') do
-	unless File.exists?('Gemfile.lock')
-		system('bundle install')
-	end
+	# Rails requires a normal bundle install quite often
+	system('bundle install --without development test')
+
+	# Install gems in deployment mode
 	system('bundle install --deployment')
 
 	# Precompile assets
@@ -73,3 +74,16 @@ end
 # Set the rails secret key
 ENV['secret_key_base'] = SecureRandom.hex(64)
 
+# Create passenger configuration
+File.open('app-root/Passengerfile.json', 'w+') do |file|
+	file.write("{\n")
+	file.write("	\"environment\": \"production\",\n")
+	file.write("	\"port\": 80,\n")
+	file.write("	\"daemonize\": false\n")
+	file.write("}")
+end
+
+# Start the passenger server
+Dir.chdir('app-root') do
+	system('bundle exec passenger start')
+end

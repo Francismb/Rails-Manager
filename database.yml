@@ -1,5 +1,5 @@
 ---
-address: ip here
-username: username for db
-password: password for db
-name: name for db
+address: ip
+username: username
+password: password
+name: dbname
