@@ -86,5 +86,5 @@ end
 
 # Start the passenger server
 Dir.chdir('app-root') do
-	system('sudo bundle exec passenger start')
+	system('bundle exec passenger start')
 end
