@@ -23,6 +23,9 @@ if ARGV[0] == 'init'
 	config.repository['username'] = ARGV[5]
 	config.repository['url'] = ARGV[6]
 	config.repository.save
+
+	config.environment.variables = ARGV[7]
+	config.environment.save
 elsif ARGV[0] == 'update'
 	# Load the configuration that has been saved
 	config = Configuration.new
@@ -59,6 +62,19 @@ File.open('app-root/Gemfile', 'a') do |file|
 	file.write("end")
 end
 
+# Set the rails secret key
+ENV['SECRET_KEY_BASE'] = SecureRandom.hex(64)
+
+# Set all the parsed in environmental variables
+config.environment.variables.split(',').each do |variable|
+	pair = variable.split('=')
+	if pair.length == 2
+		puts "exporting #{pair[0]} = #{pair[1]}"
+		system("export #{pair[0]}=#{pair[1]}")
+		#ENV[pair[0]] = pair[1]
+	end
+end
+
 # Install the gems from the Gemfile
 Dir.chdir('app-root') do
 	# Rails requires a normal bundle install quite often
@@ -69,22 +85,17 @@ Dir.chdir('app-root') do
 
 	# Precompile assets
 	system('RAILS_ENV=production bundle exec rake assets:precompile')
-end
 
-# Set the rails secret key
-ENV['secret_key_base'] = SecureRandom.hex(64)
+	# Migrate the database
+	system('RAILS_ENV=production bundle exec rake db:migrate')
+end
 
 # Create passenger configuration
 File.open('app-root/Passengerfile.json', 'w+') do |file|
 	file.write("{\n")
-	file.write("	\"environment\": \"production\",\n")
-	file.write("	\"port\": 80,\n")
-	file.write("	\"daemonize\": false\n")
-	file.write("	\"user\": \"webapp\"")
+	file.write("    \"environment\": \"production\",\n")
+	file.write("    \"port\": 80,\n")
+	file.write("    \"daemonize\": false\n")
+	file.write("    \"user\": \"webapp\"")
 	file.write("}")
-end
-
-# Start the passenger server
-Dir.chdir('app-root') do
-	system('bundle exec passenger start')
 end
