@@ -23,9 +23,6 @@ if ARGV[0] == 'init'
 	config.repository['username'] = ARGV[5]
 	config.repository['url'] = ARGV[6]
 	config.repository.save
-
-	config.environment.variables = ARGV[7]
-	config.environment.save
 elsif ARGV[0] == 'update'
 	# Load the configuration that has been saved
 	config = Configuration.new

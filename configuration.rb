@@ -1,5 +1,5 @@
 class Configuration
 	include UsingYAML
 
-	using_yaml :database, :repository, :environment
+	using_yaml :database, :repository
 end
