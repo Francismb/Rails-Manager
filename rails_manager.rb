@@ -62,6 +62,17 @@ File.open('app-root/Gemfile', 'a') do |file|
 	file.write("end")
 end
 
+# Set the rails secret key
+system("export SECRET_KEY_BASE=#{SecureRandom.hex(64)}")
+
+# Set all the parsed in environmental variables
+config.environment.variables.split(',').each do |variable|
+	pair = variable.split('=')
+	if pair.length == 2
+		system("export #{pair[0]}=#{pair[1]}")
+	end
+end
+
 # Install the gems from the Gemfile
 Dir.chdir('app-root') do
 	# Rails requires a normal bundle install quite often
