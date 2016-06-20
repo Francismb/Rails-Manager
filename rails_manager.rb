@@ -58,21 +58,8 @@ end
 File.open('app-root/Gemfile', 'a') do |file|
 	file.write("group :production do\n")
 	file.write("	gem 'pg'\n")
-	file.write("	gem 'passenger'\n")
+	file.write("	gem 'puma'\n")
 	file.write("end")
-end
-
-# Set the rails secret key
-ENV['SECRET_KEY_BASE'] = SecureRandom.hex(64)
-
-# Set all the parsed in environmental variables
-config.environment.variables.split(',').each do |variable|
-	pair = variable.split('=')
-	if pair.length == 2
-		puts "exporting #{pair[0]} = #{pair[1]}"
-		system("export #{pair[0]}=#{pair[1]}")
-		#ENV[pair[0]] = pair[1]
-	end
 end
 
 # Install the gems from the Gemfile
@@ -88,14 +75,4 @@ Dir.chdir('app-root') do
 
 	# Migrate the database
 	system('RAILS_ENV=production bundle exec rake db:migrate')
-end
-
-# Create passenger configuration
-File.open('app-root/Passengerfile.json', 'w+') do |file|
-	file.write("{\n")
-	file.write("    \"environment\": \"production\",\n")
-	file.write("    \"port\": 80,\n")
-	file.write("    \"daemonize\": false\n")
-	file.write("    \"user\": \"webapp\"")
-	file.write("}")
 end
