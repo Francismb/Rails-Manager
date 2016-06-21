@@ -23,6 +23,10 @@ if ARGV[0] == 'init'
 	config.repository['username'] = ARGV[5]
 	config.repository['url'] = ARGV[6]
 	config.repository.save
+
+	config.environment['variables'] = ARGV[7]
+	config.environment['secret_key_base'] = SecureRandom.hex(64)
+	config.environment.save
 elsif ARGV[0] == 'update'
 	# Load the configuration that has been saved
 	config = Configuration.new
@@ -53,13 +57,14 @@ end
 
 # Update the app-root/Gemfile file
 File.open('app-root/Gemfile', 'a') do |file|
+	file.write("\n\ngem 'figaro'\n\n")
 	file.write("group :production do\n")
 	file.write("	gem 'pg'\n")
 	file.write("	gem 'puma'\n")
 	file.write("end")
 end
 
-# Install the gems from the Gemfile
+# Install the gems from the Gemfile and set environmental variables
 Dir.chdir('app-root') do
 	# Rails requires a normal bundle install quite often
 	system('bundle install --without development test')
@@ -67,6 +72,26 @@ Dir.chdir('app-root') do
 	# Install gems in deployment mode
 	system('bundle install --deployment')
 
+	# Initialize figaro
+	system('bundle exec figaro install')
+
+	# Add environmental variables to figaro
+	File.open('config/application.yml', 'a') do |file|
+		# Set the secret_key_base
+		file.write("SECRET_KEY_BASE: \"#{config.environment['secret_key_base']}\"\n")
+
+		# Iterate and set extra environmental variables
+		config.environment['variables'].split(',').each do |variable_declaration|
+			variable = variable_declaration.split('=')
+			if variable.length == 2
+				file.write("#{variable[0]}: \"#{variable[1]}\"\n")
+			end
+		end
+	end
+end
+
+# Precompile assets and prepare the database
+Dir.chdir('app-root') do
 	# Precompile assets
 	system('RAILS_ENV=production bundle exec rake assets:precompile')
 
