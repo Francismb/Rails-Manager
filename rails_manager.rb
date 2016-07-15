@@ -82,10 +82,10 @@ Dir.chdir('app-root') do
 
 		# Iterate and set extra environmental variables
 		config.environment['variables'].split(',').each do |variable_declaration|
-			variable = variable_declaration.split('=')
-			if variable.length == 2
-				file.write("#{variable[0]}: \"#{variable[1]}\"\n")
-			end
+			index = variable_declaration.index('=')
+			variable_key = variable_declaration.slice(0, index)
+			variable_value = variable_declaration.slice(index + 1, variable_declaration.length)
+			file.write("#{variable_key}: \"#{variable_value}\"\n")
 		end
 	end
 end
